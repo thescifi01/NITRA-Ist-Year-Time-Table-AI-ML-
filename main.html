@@ -1,1 +1,586 @@
-l
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.Tech AI & ML Timetable - NITRA Technical Campus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid;
+        }
+
+        .info-card.room { border-left-color: #e74c3c; }
+        .info-card.section { border-left-color: #3498db; }
+        .info-card.date { border-left-color: #2ecc71; }
+        .info-card.code { border-left-color: #f39c12; }
+
+        .info-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .info-card p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .timetable {
+            padding: 30px;
+        }
+
+        .timetable h2 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            min-width: 800px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 0 -15px;
+            padding: 0 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+        }
+
+        .schedule-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        .schedule-table td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 0.85em;
+            font-weight: 500;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        .day-cell {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            font-weight: bold;
+            font-size: 1em;
+            min-width: 80px;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+        }
+
+        .subject-cell {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .subject-cell:hover {
+            background: #f8f9fa;
+            transform: scale(1.02);
+        }
+
+        .bee { background: #ffebee; color: #c62828; }
+        .bcs { background: #e8f5e8; color: #2e7d32; }
+        .bas { background: #fff3e0; color: #ef6c00; }
+        .bce { background: #f3e5f5; color: #7b1fa2; }
+        .lab { background: #e3f2fd; color: #1565c0; }
+        .lunch { background: #fce4ec; color: #ad1457; }
+
+        .subjects-legend {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .subjects-legend h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .legend-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .legend-item h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            line-height: 1.4;
+            flex-shrink: 0;
+        }
+
+        .legend-item p {
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .faculty-info {
+            margin-top: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .faculty-info h3 {
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .mentors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .mentor-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .mentor-card h4 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .schedule-table {
+                font-size: 0.75em;
+                min-width: 900px;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 10px 8px;
+                min-width: 100px;
+            }
+
+            .day-cell {
+                min-width: 70px;
+                font-size: 0.9em;
+            }
+
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            .timetable {
+                padding: 20px 15px;
+            }
+
+            .table-container {
+                margin: 0 -10px;
+                padding: 0 10px;
+            }
+
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .legend-item {
+                padding: 20px 15px;
+            }
+
+            .legend-item h4 {
+                font-size: 1.1em;
+                word-wrap: break-word;
+            }
+
+            .legend-item p {
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .schedule-table {
+                font-size: 0.7em;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 8px 6px;
+                min-width: 90px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .header p {
+                font-size: 1em;
+            }
+
+            .legend-item {
+                padding: 15px 10px;
+            }
+
+            .legend-item h4 {
+                font-size: 1em;
+                line-height: 1.3;
+            }
+
+            .legend-item p {
+                font-size: 0.85em;
+                line-height: 1.4;
+            }
+
+            .subjects-legend {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 B.Tech Timetable</h1>
+            <p>Artificial Intelligence & Machine Learning - Semester 1</p>
+            <p>NITRA Technical Campus, Ghaziabad</p>
+        </div>
+
+        <div class="info-cards">
+            <div class="info-card room">
+                <h3>🏫 Room Number</h3>
+                <p>115</p>
+            </div>
+            <div class="info-card section">
+                <h3>👥 Section</h3>
+                <p>Section A</p>
+            </div>
+            <div class="info-card date">
+                <h3>📅 Effective From</h3>
+                <p>2nd September 2025</p>
+            </div>
+            <div class="info-card code">
+                <h3>📋 Document Code</h3>
+                <p>NTC/DR-02</p>
+            </div>
+        </div>
+
+        <div class="timetable">
+            <h2>📅 Weekly Schedule</h2>
+            <div class="table-container">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Day</th>
+                        <th>9:30-10:30</th>
+                        <th>10:30-11:30</th>
+                        <th>11:30-12:30</th>
+                        <th>12:30-1:15</th>
+                        <th>1:15-2:15</th>
+                        <th>2:15-3:15</th>
+                        <th>3:15-4:15</th>
+                        <th>4:15-5:15</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="day-cell">MON</td>
+                        <td class="subject-cell bcs">BCS-101<br><small>Programming</small></td>
+                        <td class="subject-cell bee">BEE-101<br><small>Electrical Engg</small></td>
+                        <td class="subject-cell bcs">BCS-101<br><small>Programming</small></td>
+                        <td class="subject-cell lunch">🍽️ LUNCH<br>BREAK</td>
+                        <td class="subject-cell bee">BEE-101 Theory<br><small>Group A2</small><br>+<br>BAS-101 Theory<br><small>Group A1</small></td>
+                        <td class="subject-cell bcs">BCS-101 Theory<br><small>Group A1</small></td>
+                        <td class="subject-cell lab">🔬 BEE-151 Lab<br><small>Group A2</small><br>+<br>BAS-103 Theory<br><small>Group A1</small></td>
+                        <td class="subject-cell lab">🔬 Lab Sessions<br><small>Various Groups</small></td>
+                    </tr>
+                    <tr>
+                        <td class="day-cell">TUE</td>
+                        <td class="subject-cell bas">BAS-101<br><small>Mathematics</small></td>
+                        <td class="subject-cell bas">BAS-104<br><small>Environment</small></td>
+                        <td class="subject-cell bas">BAS-103<br><small>Physics</small></td>
+                        <td class="subject-cell lunch">🍽️ LUNCH<br>BREAK</td>
+                        <td class="subject-cell bee">BEE-101 Theory<br><small>Group A1</small><br>+<br>BAS-101 Theory<br><small>Group A2</small></td>
+                        <td class="subject-cell bcs">BCS-101 Theory<br><small>Group A2</small></td>
+                        <td class="subject-cell lab">🔬 BEE-151 Lab<br><small>Group A1</small><br>+<br>BAS-103 Theory<br><small>Group A2</small></td>
+                        <td class="subject-cell lab">🔬 Lab Sessions<br><small>Various Groups</small></td>
+                    </tr>
+                    <tr>
+                        <td class="day-cell">WED</td>
+                        <td class="subject-cell">Free Period</td>
+                        <td class="subject-cell bce">🔧 BCE-151<br><small>Graphics Lab</small></td>
+                        <td class="subject-cell">Free Period</td>
+                        <td class="subject-cell lunch">🍽️ LUNCH<br>BREAK</td>
+                        <td class="subject-cell bas">BAS-103<br><small>Physics</small></td>
+                        <td class="subject-cell lab">🔬 BCS-151 Lab<br><small>Group A2</small><br>+<br>BAS-151 Lab<br><small>Group A1</small></td>
+                        <td class="subject-cell">Free Period</td>
+                        <td class="subject-cell">Free Period</td>
+                    </tr>
+                    <tr>
+                        <td class="day-cell">THU</td>
+                        <td class="subject-cell bas">BAS-101<br><small>Mathematics</small></td>
+                        <td class="subject-cell bcs">BCS-101<br><small>Programming</small></td>
+                        <td class="subject-cell bas">BAS-103<br><small>Physics</small></td>
+                        <td class="subject-cell lunch">🍽️ LUNCH<br>BREAK</td>
+                        <td class="subject-cell bee">BEE-101<br><small>Electrical Engg</small></td>
+                        <td class="subject-cell bas">BAS-101<br><small>Mathematics</small></td>
+                        <td class="subject-cell bas">BAS-104<br><small>Environment</small></td>
+                        <td class="subject-cell bcs">BCS-101<br><small>Programming</small></td>
+                    </tr>
+                    <tr>
+                        <td class="day-cell">FRI</td>
+                        <td class="subject-cell bas">BAS-101<br><small>Mathematics</small></td>
+                        <td class="subject-cell bas">BAS-104<br><small>Environment</small></td>
+                        <td class="subject-cell bee">BEE-101<br><small>Electrical Engg</small></td>
+                        <td class="subject-cell lunch">🍽️ LUNCH<br>BREAK</td>
+                        <td class="subject-cell bas">BAS-103<br><small>Physics</small></td>
+                        <td class="subject-cell lab">🔬 BCS-151 Lab<br><small>Group A1</small><br>+<br>BAS-151 Lab<br><small>Group A2</small></td>
+                        <td class="subject-cell">Free Period</td>
+                        <td class="subject-cell">Free Period</td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+
+            <div class="subjects-legend">
+                <h3>📖 Subject Details</h3>
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+                    <p style="color: #1565c0; font-weight: bold; margin: 0;">📱 Mobile Users: Swipe left/right on the timetable to see all time slots! 👉</p>
+                </div>
+                
+                <div style="background: #fff3e0; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid #ff9800;">
+                    <h4 style="color: #e65100; margin-bottom: 15px; font-size: 1.3em;">🎯 Group System Explained:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="background: white; padding: 15px; border-radius: 10px;">
+                            <h5 style="color: #1976d2; margin-bottom: 10px;">👥 Group A1</h5>
+                            <p style="color: #666; margin: 0;">पहला आधा section - कुछ students theory classes में जाते हैं</p>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 10px;">
+                            <h5 style="color: #388e3c; margin-bottom: 10px;">👥 Group A2</h5>
+                            <p style="color: #666; margin: 0;">दूसरा आधा section - बाकी students lab sessions में जाते हैं</p>
+                        </div>
+                    </div>
+                    <div style="background: #ffecb3; padding: 15px; border-radius: 10px; margin-top: 15px;">
+                        <p style="color: #e65100; margin: 0; font-weight: bold; text-align: center;">
+                            💡 Note: Groups rotate करते रहते हैं - एक day A1 theory में होगा तो A2 lab में, फिर next day switch हो जाते हैं!
+                        </p>
+                    </div>
+                </div>
+                <div class="legend-grid">
+                    <div class="legend-item" style="border-left-color: #c62828;">
+                        <h4>⚡ BEE-101 - Fundamentals of Electrical Engineering</h4>
+                        <p><strong>👨‍🏫 Faculty:</strong> Mr. Sourabh Jain</p>
+                        <p><strong>🔬 Lab:</strong> BEE151 - Basic Electrical Engineering Lab</p>
+                        <p><strong>👨‍🔬 Lab Faculty:</strong> Mr. Sourabh Jain & Mr. Dharmendra</p>
+                        <p><strong>📖 Topics:</strong> Circuit Analysis, Electrical Machines, Power Systems</p>
+                    </div>
+                    
+                    <div class="legend-item" style="border-left-color: #2e7d32;">
+                        <h4>💻 BCS-101 - Programming for Problem Solving</h4>
+                        <p><strong>👨‍🏫 Faculty:</strong> Dr. Rajesh Kumar</p>
+                        <p><strong>🔬 Lab:</strong> BCS151 - Programming Lab</p>
+                        <p><strong>👨‍🔬 Lab Faculty:</strong> Dr. Rajesh Kumar & Mr. Akash</p>
+                        <p><strong>📖 Topics:</strong> C Programming, Data Structures, Problem Solving</p>
+                    </div>
+                    
+                    <div class="legend-item" style="border-left-color: #ef6c00;">
+                        <h4>📐 BAS-101 - Engineering Mathematics I</h4>
+                        <p><strong>👩‍🏫 Faculty:</strong> Ms. Priyanka Arora</p>
+                        <p><strong>📖 Topics:</strong> Calculus, Differential Equations, Linear Algebra</p>
+                        <p><strong>🎯 Focus:</strong> Mathematical foundations for engineering</p>
+                    </div>
+                    
+                    <div class="legend-item" style="border-left-color: #1976d2;">
+                        <h4>⚗️ BAS-103 - Engineering Physics</h4>
+                        <p><strong>👨‍🏫 Faculty:</strong> Dr. Rishabh Raj</p>
+                        <p><strong>🔬 Lab:</strong> BAS151 - Engineering Physics Lab</p>
+                        <p><strong>👨‍🔬 Lab Faculty:</strong> Dr. Rishabh Raj & Mr. Pankaj Kumar</p>
+                        <p><strong>📖 Topics:</strong> Mechanics, Thermodynamics, Optics, Modern Physics</p>
+                    </div>
+                    
+                    <div class="legend-item" style="border-left-color: #388e3c;">
+                        <h4>🌱 BAS-104 - Environment & Ecology</h4>
+                        <p><strong>👩‍🏫 Faculty:</strong> Ms. Annu Kumari</p>
+                        <p><strong>📖 Topics:</strong> Environmental Science, Ecology, Pollution Control</p>
+                        <p><strong>🎯 Focus:</strong> Sustainable development and environmental awareness</p>
+                    </div>
+                    
+                    <div class="legend-item" style="border-left-color: #7b1fa2;">
+                        <h4>📏 BCE-151 - Engineering Graphics & Design Lab</h4>
+                        <p><strong>👩‍🏫 Faculty:</strong> Ms. R C Yadav</p>
+                        <p><strong>👨‍🏫 Co-Faculty:</strong> Mr. Madan Gopal</p>
+                                  <p><strong>📖 Topics:</strong> Technical Drawing, CAD, 3D Modeling</p>
+                        <p><strong>🔧 Tools:</strong> AutoCAD, SolidWorks, Manual Drafting</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faculty-info">
+                <h3>👨‍🏫 Faculty Mentors</h3>
+                <div class="mentors">
+                    <div class="mentor-card">
+                        <h4>Dr. Rishabh Raj & Mr. Sourabh Jain</h4>
+                        <p>Primary Mentors</p>
+                    </div>
+                    <div class="mentor-card">
+                        <h4>Dr. Meghna Tyagi</h4>
+                        <p>Mentor for All Girls</p>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <p><strong>Year Coordinator:</strong> Dr. Meghna Tyagi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add hover effects and interactivity
+        document.querySelectorAll('.subject-cell').forEach(cell => {
+            cell.addEventListener('click', function() {
+                if (this.textContent.trim() && !this.textContent.includes('LUNCH')) {
+                    alert('Subject: ' + this.textContent.replace(/\n/g, ' - '));
+                }
+            });
+        });
+
+        // Add animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.info-card, .legend-item, .mentor-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
